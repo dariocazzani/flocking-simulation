@@ -1,3 +1,13 @@
+"""
+Boids Flocking Simulation
+Author: Dario Cazzani
+Date: 2023-07-04
+License: See LICENSE file
+
+This script creates a graphical simulation of boids demonstrating flocking behavior.
+Users can interact with the simulation by adjusting sliders that control various parameters.
+"""
+
 import pygame
 import pygame_gui
 from boid import Boid

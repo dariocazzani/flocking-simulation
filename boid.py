@@ -1,3 +1,17 @@
+"""
+Boids Simulation Module
+=======================
+
+Author: Dario Cazzani
+Date: 2023-07-04
+
+This module contains the Boid class and related utility functions for simulating
+flocking behavior using the Boids algorithm inspired by Craig Reynolds' work:
+https://www.red3d.com/cwr/boids/
+
+Please refer to the LICENSE file for licensing information.
+"""
+
 import pygame
 import numpy as np
 import random
