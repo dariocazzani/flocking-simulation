@@ -3,15 +3,6 @@ import numpy as np
 import random
 
 
-def set_magnitude(vector:np.ndarray, magnitude:float) -> np.ndarray:
-    norm = np.linalg.norm(vector)
-    if norm < 1e-3:
-        return vector
-    normalized_vector = vector / np.linalg.norm(vector)
-    scaled_vector = normalized_vector * magnitude
-    return scaled_vector
-
-
 def average_heading(vectors:np.ndarray) -> np.ndarray:
     sum_vector = np.sum(vectors, axis=0)
     heading = sum_vector / np.linalg.norm(sum_vector)  
@@ -155,5 +146,3 @@ class Boid:
             color,
             list(self.position),
             radius)
-
-
