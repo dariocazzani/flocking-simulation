@@ -65,64 +65,60 @@ class Boid:
         return np.sqrt(dx**2 + dy**2)
             
         
-    def _align(self, boids:list['Boid']) -> np.ndarray:
+    def _calculate_steering_forces(self, boids:list['Boid']) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         other_velocities = []
-        for other in boids:
-            distance = self.toroidal_distance(self.position, other.position, self.s_width, self.s_heigh)
-            if self != other and distance < self.perception:
-                other_velocities.append(other.velocity)
-        
-        if len(other_velocities) > 0:       
-            steering_force = average_heading(np.array(other_velocities)) - self.velocity
-            steering_force = limit_magnitude(steering_force, self.max_force)
-            return steering_force
-        else:
-            return np.zeros_like(self.acceleration)   
-        
-    def _cohesion(self, boids:list['Boid']) -> np.ndarray:
         other_positions = []
-        for other in boids:
-            distance = self.toroidal_distance(self.position, other.position, self.s_width, self.s_heigh)
-            if self != other and distance < self.perception:
-                other_positions.append(other.position)
-                
-        if len(other_positions) > 0:
-            steering_force = average_position(np.array(other_positions)) - self.position
-            steering_force = steering_force - self.velocity
-            steering_force = limit_magnitude(steering_force, self.max_force)
-            return steering_force
-        else:
-            return np.zeros_like(self.velocity)
+        separation_vectors = []
         
-    def _separation(self, boids:list['Boid']) -> np.ndarray:
-        new_vec = []
         for other in boids:
             distance = self.toroidal_distance(self.position, other.position, self.s_width, self.s_heigh)
             if self != other and distance < self.perception:
+                # for alignment
+                other_velocities.append(other.velocity)
+                # for cohesion
+                other_positions.append(other.position)
+                # for separation
                 tmp = self.position - other.position
                 tmp = tmp / (distance + 1e-2)
-                new_vec.append(tmp)
-        if len(new_vec) > 0:
-            steering_force = np.mean(np.array(new_vec), axis=0)
-            steering_force = steering_force - self.velocity
-            steering_force = limit_magnitude(steering_force, self.max_force)
-            return steering_force
+                separation_vectors.append(tmp)
+                
+        # alignment steering force
+        if len(other_velocities) > 0:
+            align_steering_force = average_heading(np.array(other_velocities)) - self.velocity
+            align_steering_force = limit_magnitude(align_steering_force, self.max_force)
         else:
-            return np.zeros_like(self.velocity)
-                
-                
-    def flock(self, boids, align_mult, cohesion_mult, sep_mult) -> None:
-        alignment = self._align(boids)
-        cohesion = self._cohesion(boids)
-        separation = self._separation(boids)
-        
-        alignment *= align_mult
-        cohesion *= cohesion_mult
-        separation *= sep_mult
+            align_steering_force = np.zeros_like(self.acceleration)
 
-        self.acceleration += alignment
-        self.acceleration += cohesion
-        self.acceleration += separation
+        # cohesion steering force
+        if len(other_positions) > 0:
+            cohesion_steering_force = average_position(np.array(other_positions)) - self.position
+            cohesion_steering_force = cohesion_steering_force - self.velocity
+            cohesion_steering_force = limit_magnitude(cohesion_steering_force, self.max_force)
+        else:
+            cohesion_steering_force = np.zeros_like(self.velocity)
+
+        # separation steering force
+        if len(separation_vectors) > 0:
+            separation_steering_force = np.mean(np.array(separation_vectors), axis=0)
+            separation_steering_force = separation_steering_force - self.velocity
+            separation_steering_force = limit_magnitude(separation_steering_force, self.max_force)
+        else:
+            separation_steering_force = np.zeros_like(self.velocity)
+            
+        return align_steering_force, cohesion_steering_force, separation_steering_force
+
+                
+                
+    def apply_flocking_behaviors(self, boids, align_mult, cohesion_mult, sep_mult) -> None:
+        align_force, cohesion_force, separation_force = self._calculate_steering_forces(boids)
+
+        align_force *= align_mult
+        cohesion_force *= cohesion_mult
+        separation_force *= sep_mult
+
+        self.acceleration += align_force
+        self.acceleration += cohesion_force
+        self.acceleration += separation_force
     
     
     def show(self, screen):

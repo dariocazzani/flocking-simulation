@@ -96,7 +96,7 @@ def main():
         screen.fill(Settings.SCREEN_COLOR)
 
         for boid in flock:
-            boid.flock(flock, align_mult, cohesion_mult, sep_mult)
+            boid.apply_flocking_behaviors(flock, align_mult, cohesion_mult, sep_mult)
             boid.edges()
             boid.update()
             boid.show(screen)
