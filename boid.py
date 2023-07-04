@@ -39,7 +39,7 @@ class Boid:
         self.s_heigh = screen_height
         self.s_width = screen_width
         self.position = np.array([random.uniform(0, screen_width), random.uniform(0, screen_height)])
-        self.velocity = np.random.randn(2) * 2
+        self.velocity = np.array([random.uniform(-1, 1), random.uniform(-1, 1)])
         self.acceleration = np.array([0.0, 0.0])
         self.max_force:float = 0.5
         self.perception:float = 50
@@ -143,6 +143,8 @@ class Boid:
         self.position = new_position
         self.velocity = new_velocity
         self.acceleration = new_acceleration
+        noise = np.random.normal(0, 0.2, 2)
+        self.acceleration += noise
         self.update()
     
     
