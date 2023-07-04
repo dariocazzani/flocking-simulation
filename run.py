@@ -25,7 +25,7 @@ def create_gui_elements(manager):
     gui_elements = {}
     gui_elements["align_slider"] = pygame_gui.elements.UIHorizontalSlider(
         relative_rect=pygame.Rect((120, 20), (200, 20)),
-        start_value=1.1,
+        start_value=0.28,
         value_range=(0.0, 5.0),
         manager=manager
     )
@@ -36,7 +36,7 @@ def create_gui_elements(manager):
     )
     gui_elements["cohesion_slider"] = pygame_gui.elements.UIHorizontalSlider(
         relative_rect=pygame.Rect((120, 50), (200, 20)),
-        start_value=0.25,
+        start_value=0.02,
         value_range=(0.0, 0.5),
         manager=manager
     )
@@ -47,7 +47,7 @@ def create_gui_elements(manager):
     )
     gui_elements["separation_slider"] = pygame_gui.elements.UIHorizontalSlider(
         relative_rect=pygame.Rect((120, 80), (200, 20)),
-        start_value=0.25,
+        start_value=0.02,
         value_range=(0.0, 0.5),
         manager=manager
     )

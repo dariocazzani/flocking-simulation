@@ -148,15 +148,21 @@ class Boid:
         self.position = new_position
         self.velocity = new_velocity
         self.acceleration = new_acceleration
-        noise = np.random.normal(0, 0.2, 2)
+        noise = np.random.normal(0, 0.1, 2)
         self.acceleration += noise
         self.update()
     
     
-    def show(self, screen, radius:float):
-        color:tuple = (255, 255, 255)
-        pygame.draw.circle(
-            screen,
-            color,
-            list(self.position),
-            radius)
+    def show(self, screen, size:float):
+        angle = np.arctan2(self.velocity[1], self.velocity[0])
+
+        point1 = np.array([np.cos(angle), np.sin(angle)]) * size + self.position
+        point2 = np.array([np.cos(angle + 2.3), np.sin(angle + 2.3)]) * size/2 + self.position
+        point3 = np.array([np.cos(angle - 2.3), np.sin(angle - 2.3)]) * size/2 + self.position
+        
+        p1 = [int(point1[0]), int(point1[1])]
+        p2 = [int(point2[0]), int(point2[1])]
+        p3 = [int(point3[0]), int(point3[1])]
+        color = (255, 255, 255)
+
+        pygame.draw.polygon(screen, color, [p1, p2, p3])
