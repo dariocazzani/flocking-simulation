@@ -2,6 +2,7 @@ import pygame
 import numpy as np
 import random
 
+
 def set_magnitude(vector:np.ndarray, magnitude:float) -> np.ndarray:
     norm = np.linalg.norm(vector)
     if norm < 1e-3:
@@ -10,13 +11,16 @@ def set_magnitude(vector:np.ndarray, magnitude:float) -> np.ndarray:
     scaled_vector = normalized_vector * magnitude
     return scaled_vector
 
+
 def average_heading(vectors:np.ndarray) -> np.ndarray:
     sum_vector = np.sum(vectors, axis=0)
     heading = sum_vector / np.linalg.norm(sum_vector)  
     return heading
 
+
 def average_position(vectors:np.ndarray) -> np.ndarray:
     return np.mean(vectors, axis=0)
+
 
 def limit_magnitude(vector: np.ndarray, max_magnitude: float) -> np.ndarray:
     norm = np.linalg.norm(vector)
@@ -64,11 +68,11 @@ class Boid:
         dy = min(dy, height - dy)
         return np.sqrt(dx**2 + dy**2)
             
-        
     def _calculate_steering_forces(self, boids:list['Boid']) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         other_velocities = []
         other_positions = []
         separation_vectors = []
+        min_separation_distance = float('inf')
         
         for other in boids:
             distance = self.toroidal_distance(self.position, other.position, self.s_width, self.s_heigh)
@@ -82,6 +86,9 @@ class Boid:
                 tmp = tmp / (distance + 1e-2)
                 separation_vectors.append(tmp)
                 
+                # Keep track of the minimum separation distance
+                min_separation_distance = min(min_separation_distance, distance)
+                    
         # alignment steering force
         if len(other_velocities) > 0:
             align_steering_force = average_heading(np.array(other_velocities)) - self.velocity
@@ -101,30 +108,46 @@ class Boid:
         if len(separation_vectors) > 0:
             separation_steering_force = np.mean(np.array(separation_vectors), axis=0)
             separation_steering_force = separation_steering_force - self.velocity
-            separation_steering_force = limit_magnitude(separation_steering_force, self.max_force)
+
+            # Apply stronger force when boids are too close.
+            min_distance_for_strong_separation = 25.0
+            if min_separation_distance < min_distance_for_strong_separation:
+                max_force = self.max_force * 2
+            else:
+                max_force = self.max_force
+
+            separation_steering_force = limit_magnitude(separation_steering_force, max_force)
         else:
             separation_steering_force = np.zeros_like(self.velocity)
             
         return align_steering_force, cohesion_steering_force, separation_steering_force
 
+                    
                 
-                
-    def apply_flocking_behaviors(self, boids, align_mult, cohesion_mult, sep_mult) -> None:
+    def calculate_new_state(self, boids, align_mult, cohesion_mult, sep_mult):
         align_force, cohesion_force, separation_force = self._calculate_steering_forces(boids)
 
         align_force *= align_mult
         cohesion_force *= cohesion_mult
         separation_force *= sep_mult
-
-        self.acceleration += align_force
-        self.acceleration += cohesion_force
-        self.acceleration += separation_force
+        
+        new_acceleration = self.acceleration + align_force + cohesion_force + separation_force
+        new_velocity = self.velocity + new_acceleration
+        new_position = self.position + new_velocity
+        
+        return new_position, new_velocity, new_acceleration
     
     
-    def show(self, screen):
-        # pygame.draw.circle(surface, color, position, radius)
+    def apply_new_state(self, new_state):
+        new_position, new_velocity, new_acceleration = new_state
+        self.position = new_position
+        self.velocity = new_velocity
+        self.acceleration = new_acceleration
+        self.update()
+    
+    
+    def show(self, screen, radius:float):
         color:tuple = (255, 255, 255)
-        radius:float = 5
         pygame.draw.circle(
             screen,
             color,

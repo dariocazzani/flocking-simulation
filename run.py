@@ -5,10 +5,11 @@ from boid import Boid
 
 class Settings:
     SCREEN_WIDTH = 1000
-    SCREEN_HEIGHT = 1000
+    SCREEN_HEIGHT = 800
     SCREEN_COLOR = (0, 0, 0)
     CLOCK_TICK = 60
-
+    NUM_BOIDS = 150
+    BOID_RADIUS = 5.
 
 def create_gui_elements(manager):
     gui_elements = {}
@@ -59,7 +60,7 @@ def handle_events(event, manager, gui_elements):
     if event.type == pygame.USEREVENT:
         if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
             if event.ui_element == gui_elements["restart_button"]:
-                flock = [Boid(screen_height=Settings.SCREEN_HEIGHT, screen_width=Settings.SCREEN_WIDTH) for _ in range(100)]
+                flock = [Boid(screen_height=Settings.SCREEN_HEIGHT, screen_width=Settings.SCREEN_WIDTH) for _ in range(Settings.NUM_BOIDS)]
 
 
 def main():
@@ -70,7 +71,7 @@ def main():
     gui_elements = create_gui_elements(manager)
 
     global flock
-    flock = [Boid(screen_height=Settings.SCREEN_HEIGHT, screen_width=Settings.SCREEN_WIDTH) for _ in range(100)]
+    flock = [Boid(screen_height=Settings.SCREEN_HEIGHT, screen_width=Settings.SCREEN_WIDTH) for _ in range(Settings.NUM_BOIDS)]
 
     running = True
     clock = pygame.time.Clock()
@@ -95,11 +96,17 @@ def main():
 
         screen.fill(Settings.SCREEN_COLOR)
 
+        # First phase: Calculate the new states
+        new_states = []
         for boid in flock:
-            boid.apply_flocking_behaviors(flock, align_mult, cohesion_mult, sep_mult)
+            new_state = boid.calculate_new_state(flock, align_mult, cohesion_mult, sep_mult)
+            new_states.append(new_state)
+
+        # Second phase: Apply the new states
+        for boid, new_state in zip(flock, new_states):
+            boid.apply_new_state(new_state)
             boid.edges()
-            boid.update()
-            boid.show(screen)
+            boid.show(screen, Settings.BOID_RADIUS)
 
         manager.draw_ui(screen)
         pygame.display.flip()
