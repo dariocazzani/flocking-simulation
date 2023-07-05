@@ -6,6 +6,12 @@ This project is a Python-based simulation of the flocking behavior of birds, com
 
 ----
 
+## Demo
+
+![Demo Gif](assets/demo.gif)
+
+---
+
 ### Concept of Flocking
 
 Flocking is the behavior exhibited when a group of birds, known as a flock, are foraging or in flight. This natural phenomenon is characterized by the breathtaking patterns and formations that emerge. Craig Reynolds' "Boids" program simulates such flocks with simple steering behaviors. Each boid is an autonomous object that adheres to a set of steering rules which aim to avoid crowding neighbors (separation), steer towards average heading of neighbors (alignment), and steer toward average position of neighbors (cohesion).
@@ -50,3 +56,4 @@ python run.py
 This will open a window with the simulation running. You will see boids moving around in a flock. On the top-left corner, you will see sliders that allow you to change the weights for alignment, cohesion, and separation. There's also a restart button to restart the simulation with the current settings.
 
 Feel free to experiment with different settings and observe how the flocking behavior changes.
+
