@@ -62,15 +62,15 @@ class Boid:
         self.max_speed:float = 5
         self.color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
 
-
-    def update(self) -> None:
+    
+    def _update(self) -> None:
         self.position += self.velocity
         self.velocity += self.acceleration
         self.velocity = limit_magnitude(self.velocity, self.max_speed)
         self.acceleration = np.zeros_like(self.acceleration)
 
-        
-    def edges(self) -> None:
+
+    def _edges(self) -> None:
         if self.position[0] > self.s_width:
             self.position[0] = 0
         elif self.position[0] < 0:
@@ -78,7 +78,7 @@ class Boid:
         if self.position[1] > self.s_heigh:
             self.position[1] = 0
         elif self.position[1] < 0:
-            self.position[1] = self.s_heigh
+            self.position[1] = self.s_heigh    
 
     
     def _apply_acc_noise(self):
@@ -161,8 +161,9 @@ class Boid:
         self.velocity = new_velocity
         self.acceleration = new_acceleration
         self._apply_acc_noise()
-        self.update()
-    
+        self._update()
+        self._edges() 
+           
     
     def show(self, screen, size:float):
         angle = np.arctan2(self.velocity[1], self.velocity[0])

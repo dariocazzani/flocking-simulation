@@ -115,7 +115,6 @@ def main():
         # Second phase: Apply the new states
         for boid, new_state in zip(flock, new_states):
             boid.apply_new_state(new_state)
-            boid.edges()
             boid.show(screen, Settings.BOID_RADIUS)
 
         manager.draw_ui(screen)
