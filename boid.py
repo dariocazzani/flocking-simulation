@@ -15,7 +15,7 @@ Please refer to the LICENSE file for licensing information.
 import pygame
 import numpy as np
 import random
-import matplotlib.cm as cm
+
 
 def average_heading(vectors:np.ndarray) -> np.ndarray:
     sum_vector = np.sum(vectors, axis=0)
@@ -25,6 +25,7 @@ def average_heading(vectors:np.ndarray) -> np.ndarray:
 
 def average_position(vectors:np.ndarray) -> np.ndarray:
     return np.mean(vectors, axis=0)
+
 
 
 def limit_magnitude(vector: np.ndarray, max_magnitude: float) -> np.ndarray:
@@ -56,6 +57,8 @@ class Boid:
         self.acceleration = np.array([0.0, 0.0])
         self.max_force:float = 0.5
         self.perception:float = 50
+        self.min_distance_for_strong_separation = self.perception / 2
+        self.min_dist_separation_mult = 2.0
         self.max_speed:float = 5
         self.color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
 
@@ -76,7 +79,13 @@ class Boid:
             self.position[1] = 0
         elif self.position[1] < 0:
             self.position[1] = self.s_heigh
-            
+
+    
+    def _apply_acc_noise(self):
+        std = 0.1
+        noise = np.random.normal(0, std, len(self.acceleration))
+        self.acceleration += noise
+
             
     def _calculate_steering_forces(self, boids:list['Boid']) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         other_velocities = []
@@ -120,9 +129,8 @@ class Boid:
             separation_steering_force = separation_steering_force - self.velocity
 
             # Apply stronger force when boids are too close.
-            min_distance_for_strong_separation = 25.0
-            if min_separation_distance < min_distance_for_strong_separation:
-                max_force = self.max_force * 2
+            if min_separation_distance < self.min_distance_for_strong_separation:
+                max_force = self.max_force * self.min_dist_separation_mult
             else:
                 max_force = self.max_force
 
@@ -131,8 +139,7 @@ class Boid:
             separation_steering_force = np.zeros_like(self.velocity)
             
         return align_steering_force, cohesion_steering_force, separation_steering_force
-
-                    
+   
                 
     def calculate_new_state(self, boids, align_mult, cohesion_mult, sep_mult):
         align_force, cohesion_force, separation_force = self._calculate_steering_forces(boids)
@@ -153,21 +160,16 @@ class Boid:
         self.position = new_position
         self.velocity = new_velocity
         self.acceleration = new_acceleration
-        noise = np.random.normal(0, 0.1, 2)
-        self.acceleration += noise
+        self._apply_acc_noise()
         self.update()
     
     
     def show(self, screen, size:float):
         angle = np.arctan2(self.velocity[1], self.velocity[0])
-
         point1 = np.array([np.cos(angle), np.sin(angle)]) * size + self.position
         point2 = np.array([np.cos(angle + 2.3), np.sin(angle + 2.3)]) * size/2 + self.position
         point3 = np.array([np.cos(angle - 2.3), np.sin(angle - 2.3)]) * size/2 + self.position
-        
         p1 = [int(point1[0]), int(point1[1])]
         p2 = [int(point2[0]), int(point2[1])]
         p3 = [int(point3[0]), int(point3[1])]
-
-        
         pygame.draw.polygon(screen, self.color, [p1, p2, p3])
