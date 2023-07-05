@@ -16,7 +16,6 @@ import pygame
 import numpy as np
 import random
 
-
 def average_heading(vectors:np.ndarray) -> np.ndarray:
     sum_vector = np.sum(vectors, axis=0)
     heading = sum_vector / np.linalg.norm(sum_vector)  
@@ -49,7 +48,8 @@ class Boid:
         self.max_force:float = 0.5
         self.perception:float = 50
         self.max_speed:float = 5
-        
+        self.color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+
     def update(self) -> None:
         self.position += self.velocity
         self.velocity += self.acceleration
@@ -163,6 +163,6 @@ class Boid:
         p1 = [int(point1[0]), int(point1[1])]
         p2 = [int(point2[0]), int(point2[1])]
         p3 = [int(point3[0]), int(point3[1])]
-        color = (255, 255, 255)
 
-        pygame.draw.polygon(screen, color, [p1, p2, p3])
+        
+        pygame.draw.polygon(screen, self.color, [p1, p2, p3])
