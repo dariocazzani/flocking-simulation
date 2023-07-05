@@ -15,6 +15,7 @@ Please refer to the LICENSE file for licensing information.
 import pygame
 import numpy as np
 import random
+import matplotlib.cm as cm
 
 def average_heading(vectors:np.ndarray) -> np.ndarray:
     sum_vector = np.sum(vectors, axis=0)
@@ -38,6 +39,14 @@ def limit_magnitude(vector: np.ndarray, max_magnitude: float) -> np.ndarray:
         return vector
 
 
+def toroidal_distance(pos1, pos2, width, height):
+    dx = abs(pos1[0] - pos2[0])
+    dy = abs(pos1[1] - pos2[1])
+    dx = min(dx, width - dx)
+    dy = min(dy, height - dy)
+    return np.sqrt(dx**2 + dy**2)
+
+
 class Boid:
     def __init__(self, screen_height:int, screen_width:int) -> None:
         self.s_heigh = screen_height
@@ -50,11 +59,13 @@ class Boid:
         self.max_speed:float = 5
         self.color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
 
+
     def update(self) -> None:
         self.position += self.velocity
         self.velocity += self.acceleration
         self.velocity = limit_magnitude(self.velocity, self.max_speed)
         self.acceleration = np.zeros_like(self.acceleration)
+
         
     def edges(self) -> None:
         if self.position[0] > self.s_width:
@@ -66,12 +77,6 @@ class Boid:
         elif self.position[1] < 0:
             self.position[1] = self.s_heigh
             
-    def toroidal_distance(self, pos1, pos2, width, height):
-        dx = abs(pos1[0] - pos2[0])
-        dy = abs(pos1[1] - pos2[1])
-        dx = min(dx, width - dx)
-        dy = min(dy, height - dy)
-        return np.sqrt(dx**2 + dy**2)
             
     def _calculate_steering_forces(self, boids:list['Boid']) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         other_velocities = []
@@ -80,7 +85,7 @@ class Boid:
         min_separation_distance = float('inf')
         
         for other in boids:
-            distance = self.toroidal_distance(self.position, other.position, self.s_width, self.s_heigh)
+            distance = toroidal_distance(self.position, other.position, self.s_width, self.s_heigh)
             if self != other and distance < self.perception:
                 # for alignment
                 other_velocities.append(other.velocity)
